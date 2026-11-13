@@ -1,0 +1,94 @@
+name: Assistencialize - Windows portatil
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner Windows x64 (use um runner maior se faltar disco/RAM)'
+        required: true
+        default: windows-2025
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portable-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:assistencialize
+
+  portable:
+    needs: checks
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 360
+    env:
+      MOZILLABUILD: 'C:\mozilla-build\'
+      MOZBUILD_STATE_PATH: 'C:\mozbuild'
+      MOZ_WINDOWS_BOOTSTRAP: '1'
+      MOZ_AUTOMATION: '1'
+      SURFER_COMPAT: x86_64
+      CARGO_INCREMENTAL: '0'
+      PYTHONUTF8: '1'
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: source
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: source/.nvmrc
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: source/.python-version
+      - name: Check available disk space
+        run: |
+          $drive = Get-PSDrive -Name ([IO.Path]::GetPathRoot($env:GITHUB_WORKSPACE).Substring(0,1))
+          if ($drive.Free -lt 50GB) {
+            throw 'Firefox precisa de mais disco. Selecione um runner Windows x64 maior com pelo menos 50 GiB livres e 16 GiB RAM; este workflow nao usa artifact builds incompletas.'
+          }
+      - name: Install MozillaBuild
+        run: |
+          choco install mozillabuild --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw 'Falha ao instalar MozillaBuild' }
+          if (!(Test-Path 'C:\mozilla-build\msys2\usr\bin\bash.exe')) { throw 'MozillaBuild nao foi instalado no caminho esperado' }
+          'C:\mozilla-build\msys2\usr\bin' >> $env:GITHUB_PATH
+          'C:\Program Files\7-Zip' >> $env:GITHUB_PATH
+      - name: Compile and package portable build
+        working-directory: source
+        run: ./scripts/ci/windows-portable.ps1
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Assistencialize-Windows-x64-portatil-${{ github.run_number }}
+          path: source/artifacts/Assistencialize-Windows-x64-portatil.zip
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-build-logs-${{ github.run_number }}
+          path: |
+            source/artifacts/build.log
+            source/artifacts/SHA256SUMS.txt
+            source/artifacts/smoke.png
+            source/engine/obj-*/config.log
+          if-no-files-found: ignore
+          retention-days: 7
