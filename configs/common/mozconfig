@@ -10,8 +10,8 @@ ac_add_options --with-app-basename=Assistencialize
 ac_add_options --with-l10n-base="${topsrcdir}/browser/locales"
 
 export MOZ_APP_BASENAME=Assistencialize
-export MOZ_BRANDING_DIRECTORY=${brandingDir}
-export MOZ_OFFICIAL_BRANDING_DIRECTORY=${brandingDir}
+# Surfer selects branding with --with-branding. MOZ_*BRANDING_DIRECTORY
+# variables are confvars-only and cannot be exported from mozconfig.
 
 ac_add_options --with-distribution-id=org.assistencialize.browser
 
@@ -105,5 +105,5 @@ mk_add_options MOZ_REQUIRE_SIGNING=
 
 # Assistencialize development builds do not consume upstream binary updates.
 ac_add_options --disable-updater
-export MOZ_APP_VENDOR=Assistencialize
-export MOZ_APP_PROFILE=assistencialize
+# Vendor and profile are project flags, not mozconfig options. Their values
+# are set by the browser/moz.configure and toolkit/moz.configure patches.

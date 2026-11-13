@@ -1,2 +1,2 @@
-Build request: 5
-Reason: Capture native stdout/stderr and exit codes in build.log to diagnose the Windows configure failure
+Build request: 6
+Reason: Set branding through supported Firefox project flags and --with-branding instead of forbidden mozconfig exports
