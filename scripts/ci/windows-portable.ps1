@@ -12,6 +12,11 @@ Set-Location (Join-Path $PSScriptRoot '../..')
 New-Item artifacts -ItemType Directory -Force | Out-Null
 Start-Transcript -Path artifacts/build.log
 try {
+    foreach ($required in @('configs/common/mozconfig', 'configs/windows/mozconfig')) {
+        if (!(Test-Path -LiteralPath $required -PathType Leaf)) {
+            throw "Configuracao obrigatoria ausente no checkout: $required"
+        }
+    }
     Run 'git' @('config', '--global', 'user.name', 'github-actions[bot]')
     Run 'git' @('config', '--global', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
     # Firefox has paths beyond the traditional Windows MAX_PATH limit.

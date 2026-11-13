@@ -26,7 +26,8 @@ locales/firefox-l10n/
 !src/toolkit/themes/shared/design-system/dist/
 .DS_Store
 
-mozconfig
+# Ignore only the generated local override, not configs/*/mozconfig.
+/mozconfig
 
 build/signing/env/
 build/signing/nss_config/
