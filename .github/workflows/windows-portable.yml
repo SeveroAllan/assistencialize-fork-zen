@@ -30,6 +30,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run test:assistencialize
+      - name: Test native command logging
+        shell: pwsh
+        run: ./scripts/ci/test-native-command.ps1
 
   portable:
     needs: checks
@@ -82,7 +85,9 @@ jobs:
           'C:\Program Files\7-Zip' >> $env:GITHUB_PATH
       - name: Compile and package portable build
         working-directory: ${{ steps.short-path.outputs.root }}
-        run: ./scripts/ci/windows-portable.ps1
+        run: |
+          ./scripts/ci/test-native-command.ps1
+          ./scripts/ci/windows-portable.ps1
       - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:
@@ -98,6 +103,7 @@ jobs:
           name: Windows-build-logs-${{ github.run_number }}
           path: |
             ${{ steps.short-path.outputs.root }}/artifacts/build.log
+            ${{ steps.short-path.outputs.root }}/artifacts/transcript.log
             ${{ steps.short-path.outputs.root }}/artifacts/SHA256SUMS.txt
             ${{ steps.short-path.outputs.root }}/artifacts/smoke.png
             ${{ steps.short-path.outputs.root }}/engine/obj-*/config.log

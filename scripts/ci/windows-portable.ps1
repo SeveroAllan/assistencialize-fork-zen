@@ -3,14 +3,17 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'native-command.ps1')
 function Run([string] $Program, [string[]] $Arguments) {
-    & $Program @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Program failed ($LASTEXITCODE): $Arguments" }
+    Invoke-LoggedCommand -Program $Program -Arguments $Arguments -LogPath $script:CommandLog
 }
 
 Set-Location (Join-Path $PSScriptRoot '../..')
 New-Item artifacts -ItemType Directory -Force | Out-Null
-Start-Transcript -Path artifacts/build.log
+$script:CommandLog = Join-Path (Get-Location) 'artifacts/build.log'
+Set-Content -LiteralPath $script:CommandLog -Value 'Assistencialize Windows build command output' -Encoding utf8NoBOM
+# Keep the transcript separate so it cannot overwrite command output.
+Start-Transcript -Path artifacts/transcript.log
 try {
     # mach enforces a stricter source-root limit than Git's long-path support.
     $enginePath = [IO.Path]::GetFullPath((Join-Path (Get-Location) 'engine'))

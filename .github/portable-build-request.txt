@@ -1,2 +1,2 @@
-Build request: 4
-Reason: Reuse Zen workspace buttons and tab styling with horizontal header; validate component relocation in Firefox
+Build request: 5
+Reason: Capture native stdout/stderr and exit codes in build.log to diagnose the Windows configure failure
