@@ -1,2 +1,2 @@
-Build request: 3
-Reason: Build Firefox from a short source directory within the Windows 62-character limit
+Build request: 4
+Reason: Reuse Zen workspace buttons and tab styling with horizontal header; validate component relocation in Firefox

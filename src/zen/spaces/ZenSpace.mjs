@@ -285,7 +285,9 @@ export class nsZenWorkspace extends MozXULElement {
     // stops at element bounds when finishing scrolling.
     try {
       Object.defineProperty(this.scrollbox, "lineScrollAmount", {
-        get: () => 36,
+        get: () => this.scrollbox.getAttribute("orient") === "horizontal"
+          ? (this.tabsContainer.querySelector(".tabbrowser-tab:not([hidden])")?.getBoundingClientRect().width || 36)
+          : 36,
       });
     } catch (e) {
       console.warn("Failed to set lineScrollAmount", e);

@@ -108,6 +108,7 @@ class ZenStartup {
       document
         .getElementById("tabbrowser-arrowscrollbox")
         .setAttribute("orient", "vertical");
+      gZenVerticalTabsManager.applyAssistencializeLayout();
       this.isReady = true;
       this.#initialized.resolve();
 

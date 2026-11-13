@@ -124,7 +124,6 @@ class nsZenWorkspaceIcons extends MozXULElement {
   #updateWorkspaceIcon(button, workspace) {
     button.setAttribute("tooltiptext", workspace.name);
     button.setAttribute("aria-label", workspace.name);
-    button.setAttribute("label", workspace.name);
 
     const isSvgIcon = !!workspace.icon?.endsWith(".svg");
     const hasIcon = gZenWorkspaces.workspaceHasIcon(workspace);
@@ -192,7 +191,7 @@ class nsZenWorkspaceIcons extends MozXULElement {
       button.remove();
     }
 
-    if (workspaces.length <= 1) {
+    if (workspaces.length <= 1 && !document.documentElement.hasAttribute("assistencialize-header-tabs")) {
       this.setAttribute("dont-show", "true");
     } else {
       this.removeAttribute("dont-show");
@@ -221,6 +220,7 @@ class nsZenWorkspaceIcons extends MozXULElement {
     let i = 0;
     let selected = -1;
     for (const button of buttons) {
+      button.setAttribute("aria-pressed", String(button.getAttribute("zen-workspace-id") == uuid));
       if (button.getAttribute("zen-workspace-id") == uuid) {
         selected = i;
       } else if (button.hasAttribute("active")) {

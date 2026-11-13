@@ -29,3 +29,13 @@ npm test -- spaces/browser_assistencialize_isolation.js
 Esse teste abre o mesmo domínio em dois workspaces e verifica cookies, localStorage, retorno à primeira sessão, bloqueio de movimentação e posicionamento dos elementos. A validação manual Windows deve incluir dois logins reais em web.whatsapp.com, reinício do navegador, múltiplas janelas e reconexão. Os limites de dispositivos vinculados são os definidos pelo WhatsApp.
 
 Bloqueio atual: o proxy retorna HTTP 403 para archive.mozilla.org; não há engine, executável nem instalador disponível para rodar os testes funcionais.
+
+## Adaptacao de componentes preservando o tema Zen
+
+O seletor usa os mesmos botoes, icones, estados de selecao e dimensoes do Zen, em coluna na sidebar. O rodape continua na sidebar. As abas reais do workspace ativo ficam em uma faixa no topo da area principal, junto aos controles nativos. Nenhuma copia de aba e criada para representar a interface.
+
+Foram removidos os tamanhos arbitrarios da primeira implementacao (42/36px e larguras de 100/220px), a mudanca do espacamento dos botoes e a forcagem de botoes de fechar. O CSS adicional trata da disposicao dos containers; cores, bordas, sombras, fontes e dimensoes usam as regras e variaveis existentes do Zen. A orientacao horizontal e aplicada tambem ao tabbrowser, para o codigo nativo reconhecer o eixo de teclado/arraste, e reaplicada apos o startup.
+
+A implementacao conserva a posicao original dos elementos e seus atributos de orientacao para restaurar o modo anterior. Novos workspaces recebem a orientacao do layout. A sincronizacao de sessoes e a politica de cookies nao foram redesenhadas nesta etapa; as limitacoes da revisao arquitetural ainda precisam ser resolvidas.
+
+Teste adicionado: `zen/tests/spaces/browser_assistencialize_layout.js`. Compara propriedades visuais antes/depois, verifica os mesmos elementos, sua posicao, orientacao, troca de workspace e restauracao ao desativar a opcao. O workflow executa esse teste no Firefox compilado antes de empacotar. Ainda nao foi executado localmente, pois o engine nao esta disponivel aqui. A equivalencia visual precisa da execucao no Windows e de revisao de DPI/modo compacto/macOS.

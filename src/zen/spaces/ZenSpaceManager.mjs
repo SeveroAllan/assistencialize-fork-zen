@@ -3076,6 +3076,7 @@ class nsZenWorkspaces {
   }
 
   onPinnedTabsResize(entries, forAnimation = false) {
+    if (document.documentElement.hasAttribute("assistencialize-header-tabs")) return;
     if (
       document.documentElement.hasAttribute("inDOMFullscreen") ||
       lazy.ZenLibrary.isLibrarySlightlyOpen ||
@@ -3703,7 +3704,8 @@ class nsZenWorkspaces {
     if (!parent || this._processingResize) {
       return;
     }
-    if (!gZenPinnedTabManager.expandedSidebarMode) {
+    if (document.documentElement.hasAttribute("assistencialize-header-tabs") ||
+        !gZenPinnedTabManager.expandedSidebarMode) {
       for (const icon of parent.children) {
         if (icon.tagName === "toolbarbutton") {
           icon.style.width = ""; // Reset to default size when in expanded mode

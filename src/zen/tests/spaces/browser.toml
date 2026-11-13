@@ -52,3 +52,5 @@ support-files = [
 
 ["browser_assistencialize_isolation.js"]
 prefs = ["zen.workspaces.separate-essentials=true"]
+
+["browser_assistencialize_layout.js"]

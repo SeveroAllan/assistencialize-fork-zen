@@ -34,6 +34,7 @@ window.gZenVerticalTabsManager = {
     window.addEventListener("ZenCompactMode:LayoutUpdate", () =>
       this._updateEvent()
     );
+    window.addEventListener("ZenWorkspacesUIUpdate", () => this.applyAssistencializeLayout());
     this.initRightSideOrderContextMenu();
     this.initSetProfileContextMenu();
 
@@ -57,38 +58,63 @@ window.gZenVerticalTabsManager = {
   },
 
   applyAssistencializeLayout() {
-    if (!Services.prefs.getBoolPref("assistencialize.workspaces.header-tabs", true) || this.hidesTabsToolbar) {
+    const root = document.documentElement;
+    const enabled = this._prefsAssistencializeHeaderTabs
+      && !this.hidesTabsToolbar && !root.hasAttribute("customizing");
+    if (!enabled) {
+      for (const [node, marker] of this._assistencializePositions || []) {
+        marker.parentNode?.moveBefore(node, marker);
+        marker.remove();
+      }
+      this._assistencializePositions = null;
+      for (const [node, orient] of this._assistencializeOrientations || []) {
+        if (orient === null) node.removeAttribute("orient");
+        else node.setAttribute("orient", orient);
+      }
+      this._assistencializeOrientations = null;
+      root.removeAttribute("assistencialize-header-tabs");
+      document.getElementById("assistencialize-tab-header")?.remove();
       return;
     }
-    const wrapper = document.getElementById("zen-main-app-wrapper");
+    const wrapper = document.getElementById("zen-appcontent-wrapper");
     const toolbar = document.getElementById("TabsToolbar");
+    const sidebar = document.getElementById("titlebar");
     const icons = document.getElementById("zen-workspaces-button");
-    if (!wrapper || !toolbar || !icons) {
-      return;
+    const footer = document.getElementById("zen-sidebar-foot-buttons");
+    if (!wrapper || !toolbar || !sidebar || !icons || !footer) return;
+    const controls = this.actualWindowButtons;
+    if (!this._assistencializePositions) {
+      this._assistencializePositions = new Map();
+      for (const node of [toolbar, icons, footer, controls]) {
+        const marker = document.createComment("Assistencialize original component position");
+        node.before(marker);
+        this._assistencializePositions.set(node, marker);
+      }
+      this._assistencializeOrientations = new Map();
     }
     let header = document.getElementById("assistencialize-tab-header");
     if (!header) {
       header = document.createXULElement("hbox");
       header.id = "assistencialize-tab-header";
       header.classList.add("browser-titlebar");
-      wrapper.before(header);
+      // Remain inside #browser so Zen's density, spacing and theme tokens inherit.
+      wrapper.prepend(header);
     }
-    document.documentElement.setAttribute("assistencialize-header-tabs", "true");
-    // Keep the real tab elements: selection, closing and workspace visibility
-    // continue to be managed by tabbrowser, not by a second set of buttons.
-    const sidebar = document.getElementById("titlebar");
-    if (icons.parentElement !== sidebar) {
-      sidebar.append(icons);
-    }
-    if (toolbar.parentElement !== header) {
-      header.append(toolbar);
-    }
-    const controls = this.actualWindowButtons;
+    root.setAttribute("assistencialize-header-tabs", "true");
+    // Move the existing components without reconnecting custom elements.
+    if (footer.parentElement !== sidebar) sidebar.moveBefore(footer, null);
+    if (icons.parentElement !== sidebar) sidebar.moveBefore(icons, footer);
+    if (toolbar.parentElement !== header) header.moveBefore(toolbar, null);
     if (controls.parentElement !== header) {
-      this.isWindowsStyledButtons ? header.append(controls) : header.prepend(controls);
+      header.moveBefore(controls, this.isWindowsStyledButtons ? null : header.firstChild);
     }
-    for (const strip of toolbar.querySelectorAll("arrowscrollbox")) {
-      strip.setAttribute("orient", "horizontal");
+    const strips = [document.getElementById("tabbrowser-tabs"), ...toolbar.querySelectorAll("arrowscrollbox")];
+    for (const strip of strips) {
+      if (!strip) continue;
+      if (!this._assistencializeOrientations.has(strip)) {
+        this._assistencializeOrientations.set(strip, strip.getAttribute("orient"));
+      }
+      if (strip.getAttribute("orient") !== "horizontal") strip.setAttribute("orient", "horizontal");
     }
   },
 
@@ -309,6 +335,8 @@ window.gZenVerticalTabsManager = {
   },
 
   initializePreferences(updateEvent) {
+    XPCOMUtils.defineLazyPreferenceGetter(this, "_prefsAssistencializeHeaderTabs",
+      "assistencialize.workspaces.header-tabs", true, updateEvent);
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
       "_prefsVerticalTabs",

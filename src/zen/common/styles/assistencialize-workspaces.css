@@ -1,13 +1,16 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+/* Structural overrides only. Colors, radii, shadows, borders, tab height,
+ * typography, button sizes and spacing are supplied by the existing Zen theme. */
 :root[assistencialize-header-tabs] {
   #assistencialize-tab-header {
     display: flex;
     flex-direction: row;
     flex: 0 0 auto;
-    min-height: 42px;
-    padding-inline-start: 40px;
+    min-width: 0;
+    align-items: center;
+    gap: var(--zen-toolbox-padding);
     -moz-window-dragging: drag;
   }
   #assistencialize-tab-header > .titlebar-buttonbox-container {
@@ -18,40 +21,47 @@
     -moz-window-dragging: no-drag;
   }
   #TabsToolbar, #TabsToolbar-customization-target, #tabbrowser-tabs,
-  #zen-tabs-wrapper, #tabbrowser-arrowscrollbox,
-  zen-workspace[active], .workspace-arrowscrollbox,
-  .zen-workspace-tabs-section, .zen-essentials-container {
-    flex-direction: row !important;
-    min-height: 0 !important;
-    height: auto !important;
-    max-height: 42px !important;
-    padding-block: 0 !important;
-    margin-block: 0 !important;
-    align-items: center !important;
-  }
-  #TabsToolbar, #TabsToolbar-customization-target, #tabbrowser-tabs,
-  #zen-tabs-wrapper, zen-workspace[active] {
-    display: flex !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    width: auto !important;
-  }
-  #tabbrowser-arrowscrollbox {
-    display: flex !important;
-    min-width: 0 !important;
+  #zen-tabs-wrapper, #tabbrowser-arrowscrollbox, zen-workspace[active] {
+    display: flex;
+    flex-direction: row;
     flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    width: auto;
+    align-items: center;
+  }
+  #zen-tabs-wrapper { overflow: hidden; margin-inline: 0; }
+  zen-workspace[active] {
+    position: relative;
+    contain: layout;
+    /* Discard only the vertical offsets calculated by the sidebar layout. */
+    padding-top: 0 !important;
+    transform: none !important;
   }
   zen-workspace:not([active]) { display: none !important; }
-  .zen-workspace-tabs-section { display: flex !important; flex-shrink: 0; }
+  .workspace-arrowscrollbox {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .workspace-arrowscrollbox::part(scrollbox) {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block-end: 0;
+  }
+  .zen-workspace-normal-tabs-section, .zen-workspace-pinned-tabs-section {
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 auto;
+    align-items: center;
+  }
   .tabbrowser-tab {
-    min-width: 100px !important;
-    max-width: 220px !important;
-    height: 36px !important;
-    flex: 1 0 100px !important;
+    min-width: var(--tab-min-width);
+    max-width: var(--tab-max-width);
     -moz-window-dragging: no-drag;
   }
   .zen-essentials-container[hidden] { display: none !important; }
-  .tab-close-button { display: flex !important; }
   .zen-current-workspace-indicator, .pinned-tabs-container-separator,
   .zen-workspace-empty-space, .zen-workspace-scroll-to-tab {
     display: none !important;
@@ -60,24 +70,13 @@
   #titlebar > #zen-workspaces-button {
     display: flex !important;
     flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     justify-content: start;
-    align-items: stretch;
     overflow-y: auto;
-    width: 100%;
-    gap: 6px;
   }
-  #zen-workspaces-button > toolbarbutton {
-    width: auto !important;
-    max-width: none !important;
-    min-height: 42px;
-    justify-content: start;
-    padding-inline: 12px !important;
-    -moz-window-dragging: no-drag;
-  }
-  #zen-workspaces-button .zen-workspace-icon { position: static; margin-inline-end: 8px !important; }
-  #zen-workspaces-button > toolbarbutton[active] { background: var(--zen-toolbar-element-bg); }
-  #zen-workspaces-button > toolbarbutton:focus-visible { outline: 2px solid AccentColor; }
-  @media (-moz-platform: macos) {
-    #assistencialize-tab-header { padding-inline-start: 0; }
-  }
+  #zen-workspaces-button > toolbarbutton { flex-shrink: 0; }
+  #titlebar > #zen-sidebar-foot-buttons { flex: 0 0 auto; }
+  #assistencialize-tab-header toolbarbutton { -moz-window-dragging: no-drag; }
+  &[inDOMFullscreen] #assistencialize-tab-header { display: none; }
 }

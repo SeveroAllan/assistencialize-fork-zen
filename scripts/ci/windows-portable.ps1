@@ -56,7 +56,10 @@ mk_add_options MOZ_MAKE_FLAGS="-j2"
 '@ | Set-Content mozconfig -Encoding utf8NoBOM
     Run 'npm.cmd' @('run', 'build', '--', '--jobs', '2')
     Push-Location engine
-    try { Run 'python' @('mach', 'package') }
+    try {
+        Run 'python' @('mach', '--no-interactive', 'test', '--headless', 'zen/tests/spaces/browser_assistencialize_layout.js')
+        Run 'python' @('mach', 'package')
+    }
     finally { Pop-Location }
     $archives = @(Get-ChildItem 'engine/obj-*/dist/*.zip')
     $packages = @($archives | Where-Object {
