@@ -65,6 +65,14 @@ jobs:
           if ($drive.Free -lt 50GB) {
             throw 'Firefox precisa de mais disco. Selecione um runner Windows x64 maior com pelo menos 50 GiB livres e 16 GiB RAM; este workflow nao usa artifact builds incompletas.'
           }
+      - name: Prepare short source path
+        id: short-path
+        run: |
+          $root = Join-Path ([IO.Path]::GetPathRoot($env:GITHUB_WORKSPACE)) 'az'
+          if (Test-Path -LiteralPath $root) { throw "Diretorio de build ja existe: $root" }
+          Copy-Item -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'source') -Destination $root -Recurse -Force
+          if (!(Test-Path (Join-Path $root '.git'))) { throw 'Checkout incompleto na pasta curta' }
+          "root=$root" >> $env:GITHUB_OUTPUT
       - name: Install MozillaBuild
         run: |
           choco install mozillabuild --yes --no-progress
@@ -73,25 +81,25 @@ jobs:
           'C:\mozilla-build\msys2\usr\bin' >> $env:GITHUB_PATH
           'C:\Program Files\7-Zip' >> $env:GITHUB_PATH
       - name: Compile and package portable build
-        working-directory: source
+        working-directory: ${{ steps.short-path.outputs.root }}
         run: ./scripts/ci/windows-portable.ps1
       - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:
           name: Assistencialize-Windows-x64-portatil-${{ github.run_number }}
-          path: source/artifacts/Assistencialize-Windows-x64-portatil.zip
+          path: ${{ steps.short-path.outputs.root }}/artifacts/Assistencialize-Windows-x64-portatil.zip
           if-no-files-found: error
           retention-days: 7
           compression-level: 0
       - name: Upload build diagnostics
-        if: always()
+        if: always() && steps.short-path.outputs.root != ''
         uses: actions/upload-artifact@v4
         with:
           name: Windows-build-logs-${{ github.run_number }}
           path: |
-            source/artifacts/build.log
-            source/artifacts/SHA256SUMS.txt
-            source/artifacts/smoke.png
-            source/engine/obj-*/config.log
+            ${{ steps.short-path.outputs.root }}/artifacts/build.log
+            ${{ steps.short-path.outputs.root }}/artifacts/SHA256SUMS.txt
+            ${{ steps.short-path.outputs.root }}/artifacts/smoke.png
+            ${{ steps.short-path.outputs.root }}/engine/obj-*/config.log
           if-no-files-found: ignore
           retention-days: 7

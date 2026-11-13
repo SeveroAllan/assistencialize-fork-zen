@@ -12,6 +12,11 @@ Set-Location (Join-Path $PSScriptRoot '../..')
 New-Item artifacts -ItemType Directory -Force | Out-Null
 Start-Transcript -Path artifacts/build.log
 try {
+    # mach enforces a stricter source-root limit than Git's long-path support.
+    $enginePath = [IO.Path]::GetFullPath((Join-Path (Get-Location) 'engine'))
+    if ($enginePath.Length -gt 62) {
+        throw "Caminho do engine tem $($enginePath.Length) caracteres; o Firefox no Windows aceita no maximo 62. Use uma pasta curta, como D:\az."
+    }
     foreach ($required in @('configs/common/mozconfig', 'configs/windows/mozconfig')) {
         if (!(Test-Path -LiteralPath $required -PathType Leaf)) {
             throw "Configuracao obrigatoria ausente no checkout: $required"

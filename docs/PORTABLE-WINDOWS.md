@@ -29,3 +29,5 @@ O smoke test headless confirma apenas a inicialização do exe. Ainda são neces
 ### Novas execucoes por push
 
 Uma alteracao de `.github/portable-build-request.txt` enviada a `main` solicita uma execucao nova, usando o codigo desse push. O gatilho e limitado a esse arquivo; outros pushes nao iniciam builds automaticamente. O acionamento manual em Actions continua disponivel. Para pushes, o runner padrao e `windows-2025`.
+
+O workflow copia o checkout para uma pasta curta `az` na raiz do disco de trabalho (por exemplo, `D:\az`). O engine passa a ficar em `D:\az\engine`, dentro do limite de 62 caracteres imposto pelo Firefox no Windows. Logs e ZIP sao enviados dessa pasta curta; o checkout original continua disponivel para o cache npm e limpeza do GitHub Actions.
