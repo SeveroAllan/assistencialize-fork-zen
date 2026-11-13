@@ -14,13 +14,23 @@ Start-Transcript -Path artifacts/build.log
 try {
     Run 'git' @('config', '--global', 'user.name', 'github-actions[bot]')
     Run 'git' @('config', '--global', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
+    # Firefox has paths beyond the traditional Windows MAX_PATH limit.
+    # Configure before Surfer creates and indexes the engine repository.
+    Run 'git' @('config', '--global', 'core.longpaths', 'true')
+    Run 'git' @('config', '--global', 'core.autocrlf', 'false')
     Run 'npm.cmd' @('ci', '--no-audit', '--no-fund')
     Run 'python' @('-m', 'pip', 'install', '-r', 'requirements.txt')
     Run 'npm.cmd' @('run', 'test:assistencialize')
     Run 'npm.cmd' @('run', 'download')
+    # Surfer can report success even when its internal git add/commit failed.
+    Run 'git' @('-C', 'engine', 'rev-parse', '--verify', 'HEAD^{commit}')
+    $trackedFiles = @(& git -C engine ls-files --error-unmatch mach toolkit/moz.build)
+    if ($LASTEXITCODE -ne 0 -or $trackedFiles.Count -ne 2) {
+        throw 'O download terminou sem registrar os arquivos essenciais no Git do engine'
+    }
     # Invoke mach directly to enforce noninteractive bootstrapping.
     Push-Location engine
-    try { Run 'python' @('mach', 'bootstrap', '--application-choice', 'browser', '--no-interactive') }
+    try { Run 'python' @('mach', '--no-interactive', 'bootstrap', '--application-choice', 'browser') }
     finally { Pop-Location }
     # The checked-in Rust toolchain is selected automatically by rustup.
     Run 'rustup' @('show', 'active-toolchain')
