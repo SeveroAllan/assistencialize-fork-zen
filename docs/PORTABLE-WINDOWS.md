@@ -25,3 +25,7 @@ O workflow `.github/workflows/windows-portable.yml` permite tentar a compilaçã
 5. Em caso de falha, baixe `Windows-build-logs-<número>` para diagnóstico. Nenhum ZIP portátil é enviado se compilação, empacotamento ou smoke test falhar.
 
 O smoke test headless confirma apenas a inicialização do exe. Ainda são necessários os testes funcionais de workspaces e WhatsApp no Windows. O pacote é experimental e não assinado; o workflow não ignora validação TLS, não assina com credenciais herdadas e não publica release. A execução usa minutos e recursos do seu GitHub Actions conforme o plano/runner escolhido.
+
+### Novas execucoes por push
+
+Uma alteracao de `.github/portable-build-request.txt` enviada a `main` solicita uma execucao nova, usando o codigo desse push. O gatilho e limitado a esse arquivo; outros pushes nao iniciam builds automaticamente. O acionamento manual em Actions continua disponivel. Para pushes, o runner padrao e `windows-2025`.

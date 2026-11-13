@@ -1,6 +1,9 @@
 name: Assistencialize - Windows portatil
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/portable-build-request.txt']
   workflow_dispatch:
     inputs:
       runner:
@@ -30,7 +33,7 @@ jobs:
 
   portable:
     needs: checks
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner || 'windows-2025' }}
     timeout-minutes: 360
     env:
       MOZILLABUILD: 'C:\mozilla-build\'
